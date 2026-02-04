@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dorcas Tailoring Shop</title>
+    <!-- style -->
+    <link rel="stylesheet" href="./style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+    <!-- bill -->
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body class="bg-[#FAEBEB] min-h-screen flex flex-col items-center py-10">
+
+    <!-- customer details -->
+    <div id="enter_details" class="flex flex-col items-center justify-center gap-5 p-10 bg-[#F0C6C6] rounded-xl shadow-lg w-[500px]">
+        <h2 class="text-2xl font-bold text-[#CB3434] mb-2">New Customer</h2>
+        <input type="text" placeholder="Enter Customer Name" class=" input border p-3 w-full rounded-lg" id="name">
+        <input type="number" placeholder="Phone Number" class=" input border p-3 w-full rounded-lg" id="number">
+        <div class="flex gap-4 w-full">
+            <button id="saveCustomer" class="bg-[#cb3434] rounded-lg text-white px-4 py-3 w-full font-bold hover:bg-[#A52A2A]">Save</button>
+              <button id="itemEntry" class="bg-[#cb3434] rounded-lg text-white px-4 py-3 w-full font-bold hover:bg-[#A52A2A]">Add Details</button>
+            <button id="view" class="bg-[#CB3434] rounded-lg text-white px-4 py-3 w-full font-bold hover:bg-[#A52A2A]">View</button>
+        </div>
+        <div class="w-full text-center"> 	
+        	<p id="statusMsg" class="mt-2 font-bold transition-all teext-[#CB3434] duration-500 opacity-0"></p>           
+        </div>
+    </div>
+
+    <!-- view box -->
+
+    <div id="viewRecord" class="hidden relative p-8 bg-white rounded-2xl shadow-2xl w-[95%] max-w-[600px] mt-6">
+        <div class="flex flex-col w-full sticky top-0 bg-white z-10 pb-4 border-b">
+            <input type="text" id="searchBar" placeholder="Search Customer..." class="border p-3 w-full rounded-lg outline-none focus:border-purple-400">
+        </div>
+        <div id="recordList" class="flex flex-col gap-4 mt-6 w-full"></div>
+    </div>
+
+    <!-- item page -->
+
+    <div id="itemsPage" class="hidden flex flex-col items-center w-full">
+        <div class="bg-[#F0C6C6] p-6 rounded-xl shadow-md w-[750px] mb-6 relative">
+            <button id="backToView" class="absolute top-4 right-4 text-[#CB3434] hover:text-[#A52A2A] font-bold">
+                <i class="fas fa-arrow-left"></i> Back
+            </button>
+            <h2 class="text-xl font-bold mb-2 text-[#CB3434]">Customer Information</h2>
+            <p class="text-lg text-[#CB3434]">Name: <span id="displayItemName" class="font-bold text-[#D45959]"></span></p>
+            <p class="text-lg text-[#CB3434]">Phone: <span id="displayItemPhone" class="font-bold text-[#D45959]"></span></p>
+        </div>
+
+        <div class="w-[750px] bg-white p-6 rounded-xl shadow-lg">
+            <table class="w-full border-collapse">
+                <thead>
+                    <tr class="bg-[#D45959] text-left text-white">
+                        <td class="p-3 rounded-tl-lg">Item Name</td>
+                        <td class="p-3 text-center">Quantity</td>
+                        <td class="p-3">Amount</td>
+                        <td class="p-3 text-center rounded-tr-lg">Action</td>
+                    </tr>
+                </thead>
+                <tbody id="itemList">
+                    </tbody>
+            </table>
+            
+            <div class="flex justify-between items-center mt-6">
+                <button id="addNewRowBtn" class="bg-[#cb3434] text-white px-6 py-2 rounded-lg font-bold hover:bg-red-700">+ Add Item</button>
+                <div class="text-right">
+                    <h3 class="text-2xl font-bold text-[#CB3434]">Total: ₹<span id="totalAmount">0</span></h3>
+                </div>
+            </div>
+
+            <button id="generateBill" class="w-full mt-6 bg-[#C04000] text-white px-4 py-4 rounded-xl font-bold text-lg hover:bg-[#DE7D7D] transition">
+                Generate Bill
+            </button>
+        </div>
+    </div>
+
+    <!-- bill model -->
+
+    <div id="billModal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl relative flex flex-col max-h-[95vh]">
+        
+        <button onclick="closeBill()" class="absolute -top-3 -right-3 bg-white text-gray-500 hover:text-red-500 shadow-lg rounded-full w-10 h-10 flex items-center justify-center z-50 border border-gray-100 transition-transform hover:scale-110">
+            <i class="fas fa-times text-xl"></i>
+        </button>
+
+        <div class="p-4 border-b bg-gray-50 rounded-t-2xl grid grid-cols-3 gap-2">
+            <button onclick="downloadAsPDF()" class="bg-blue-600 text-white p-2 rounded-lg text-[10px] font-bold flex flex-col items-center gap-1 hover:bg-blue-700">
+                <i class="fas fa-file-pdf text-base"></i> PDF
+            </button>
+            <button onclick="downloadAsImage()" class="bg-purple-600 text-white p-2 rounded-lg text-[10px] font-bold flex flex-col items-center gap-1 hover:bg-purple-700">
+                <i class="fas fa-image text-base"></i> IMAGE
+            </button>
+            <button onclick="shareWhatsApp()" class="bg-green-600 text-white p-2 rounded-lg text-[10px] font-bold flex flex-col items-center gap-1 hover:bg-green-700">
+                <i class="fab fa-whatsapp text-base"></i> WHATSAPP
+            </button>
+        </div>
+
+        <div class="overflow-y-auto p-2">
+            <div id="billPrintArea" class="p-6 bg-white border border-gray-100">
+                <div class="text-center border-b-2 border-purple-100 pb-4 mb-6">
+                    <h1 class="text-2xl font-black text-purple-900 tracking-tight">Dorcas Tailoring Shop</h1>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-widest mt-1">Quality Tailoring & Designs</p>
+                </div>
+
+                <div class="flex justify-between items-start mb-6 text-sm">
+                    <div>
+                        <p class="text-gray-400 text-[10px] font-bold uppercase">Customer</p>
+                        <p id="billCustName" class="font-bold text-gray-800"></p>
+                        <p id="billCustPhone" class="text-gray-500"></p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-gray-400 text-[10px] font-bold uppercase">Date</p>
+                        <p id="billDate" class="font-bold text-gray-800"></p>
+                    </div>
+                </div>
+
+                <table class="w-full text-sm mb-6">
+                    <thead>
+                        <tr class="text-left border-b-2 border-gray-100 text-gray-400 text-[10px] uppercase">
+                            <th class="py-2">Item Description</th>
+                            <th class="py-2 text-center">Qty</th>
+                            <th class="py-2 text-right">Price</th>
+                        </tr>
+                    </thead>
+                    <tbody id="billItemsBody" class="text-gray-700">
+                        </tbody>
+                </table>
+
+                <div class="flex justify-between items-center pt-4 border-t-2 border-purple-900">
+                    <span class="text-gray-400 font-bold uppercase text-xs">Total Amount</span>
+                    <span class="text-2xl font-black text-purple-900">₹<span id="billTotal">0</span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script src="./script.js"></script>
+</body>
+</html>
