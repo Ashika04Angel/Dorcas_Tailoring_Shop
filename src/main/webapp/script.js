@@ -103,7 +103,7 @@ saveBtn.onclick = () => {
     params.append('name', name);
     params.append('phone', phone);
 
-    fetch('/TailorShop/saveCustomer', { method: 'POST', body: params })
+    fetch('saveCustomer', { method: 'POST', body: params })
         .then(res => res.text())
         .then(data => {
             if(data === "Success") {    
