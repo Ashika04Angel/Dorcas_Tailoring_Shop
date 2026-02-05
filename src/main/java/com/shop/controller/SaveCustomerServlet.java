@@ -18,17 +18,13 @@ public class SaveCustomerServlet extends HttpServlet {
 
         try {
             // 1. Load the Driver
-            Class.forName("com.mysql.cj.jdbc.Driver");
+        	Class.forName("com.mysql.cj.jdbc.Driver");
 
             // 2. Cloud Connection Details from Environment Variables
-            String dbHost = System.getenv("DB_HOST");
-            String dbPort = System.getenv("DB_PORT");
+        	String url = System.getenv("DB_URL");
             String dbUser = System.getenv("DB_USER");
             String dbPass = System.getenv("DB_PASS");
             
-            // Using the robust SSL connection string
-            String url = "jdbc:mysql://" + dbHost + ":" + dbPort + "/shop_db?useSSL=true&trustServerCertificate=true";
-
             // 3. Try-with-resources automatically closes the connection
             try (Connection conn = DriverManager.getConnection(url, dbUser, dbPass)) {
                 

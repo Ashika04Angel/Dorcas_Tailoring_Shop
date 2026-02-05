@@ -33,14 +33,10 @@ public class SaveBillServlet extends HttpServlet {
             Class.forName("com.mysql.cj.jdbc.Driver");
 
             // 2. Use Cloud Connection Details
-            // We use System.getenv so your password stays secret on Render!
-            String dbHost = System.getenv("DB_HOST");
-            String dbPort = System.getenv("DB_PORT");
+            String url = System.getenv("DB_URL");
             String dbUser = System.getenv("DB_USER");
             String dbPass = System.getenv("DB_PASS");
-            
-            // The URL includes ?sslmode=require because Aiven requires security
-            String url = "jdbc:mysql://" + dbHost + ":" + dbPort + "/shop_db?useSSL=true&trustServerCertificate=true";
+          
             try (Connection conn = DriverManager.getConnection(url, dbUser, dbPass)) {
                 
                 // Matches the column names in your new SQL table

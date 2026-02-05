@@ -16,11 +16,10 @@ public class DeleteBillServlet extends HttpServlet {
         String billId = request.getParameter("billId");
 
         // 1. Load Cloud Credentials
-        String dbHost = System.getenv("DB_HOST");
-        String dbPort = System.getenv("DB_PORT");
+        String url = System.getenv("DB_URL");
         String dbUser = System.getenv("DB_USER");
         String dbPass = System.getenv("DB_PASS");
-        String url = "jdbc:mysql://" + dbHost + ":" + dbPort + "/shop_db?useSSL=true&trustServerCertificate=true";
+        
 
         try {
             // 2. Load the Driver

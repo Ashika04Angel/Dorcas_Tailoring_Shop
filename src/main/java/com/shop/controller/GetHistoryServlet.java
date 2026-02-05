@@ -19,11 +19,10 @@ public class GetHistoryServlet extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
 
         // 1. Load Cloud Credentials
-        String dbHost = System.getenv("DB_HOST");
-        String dbPort = System.getenv("DB_PORT");
+        String url = System.getenv("DB_URL");
         String dbUser = System.getenv("DB_USER");
         String dbPass = System.getenv("DB_PASS");
-        String url = "jdbc:mysql://" + dbHost + ":" + dbPort + "/shop_db?useSSL=true&trustServerCertificate=true";
+        
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");

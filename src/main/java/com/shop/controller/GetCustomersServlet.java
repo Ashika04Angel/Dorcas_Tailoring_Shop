@@ -25,12 +25,10 @@ public class GetCustomersServlet extends HttpServlet {
         try {
             // 1. Get Cloud Connection Details
             Class.forName("com.mysql.cj.jdbc.Driver");
-            String dbHost = System.getenv("DB_HOST");
-            String dbPort = System.getenv("DB_PORT");
+            String url = System.getenv("DB_URL");
             String dbUser = System.getenv("DB_USER");
             String dbPass = System.getenv("DB_PASS");
             
-            String url = "jdbc:mysql://" + dbHost + ":" + dbPort + "/shop_db?useSSL=true&trustServerCertificate=true";
 
             // 2. Fetch Data using Try-with-resources
             try (Connection conn = DriverManager.getConnection(url, dbUser, dbPass);
