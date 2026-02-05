@@ -17,17 +17,32 @@ public class SaveCustomerServlet extends HttpServlet {
         String phone = request.getParameter("phone");
 
         try {
+            // 1. Load the Driver
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/shop_db", "root", "admin");
+
+            // 2. Cloud Connection Details from Environment Variables
+            String dbHost = System.getenv("DB_HOST");
+            String dbPort = System.getenv("DB_PORT");
+            String dbUser = System.getenv("DB_USER");
+            String dbPass = System.getenv("DB_PASS");
             
-            PreparedStatement ps = conn.prepareStatement("INSERT INTO customers (name, phone) VALUES (?, ?)");
-            ps.setString(1, name);
-            ps.setString(2, phone);
-            ps.executeUpdate();
-            
-            response.getWriter().write("Success");
+            // Using the robust SSL connection string
+            String url = "jdbc:mysql://" + dbHost + ":" + dbPort + "/shop_db?useSSL=true&trustServerCertificate=true";
+
+            // 3. Try-with-resources automatically closes the connection
+            try (Connection conn = DriverManager.getConnection(url, dbUser, dbPass)) {
+                
+                String sql = "INSERT INTO customers (name, phone) VALUES (?, ?)";
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ps.setString(1, name);
+                ps.setString(2, phone);
+                
+                ps.executeUpdate();
+                response.getWriter().write("Success");
+            } 
         } catch (Exception e) {
             e.printStackTrace();
+            // Printing the error to the screen helps you debug on Render
             response.getWriter().write("Error: " + e.getMessage());
         }
     }

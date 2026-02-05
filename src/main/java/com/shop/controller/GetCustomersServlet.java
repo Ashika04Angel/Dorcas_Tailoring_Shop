@@ -13,7 +13,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import com.google.gson.Gson; // Ensure you have the Gson dependency in pom.xml
+import com.google.gson.Gson; 
 
 @WebServlet("/getCustomers")
 public class GetCustomersServlet extends HttpServlet {
@@ -23,31 +23,36 @@ public class GetCustomersServlet extends HttpServlet {
         PrintWriter out = response.getWriter();
 
         try {
-            // 1. Connect to MySQL
+            // 1. Get Cloud Connection Details
             Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/shop_db", "root", "admin");
+            String dbHost = System.getenv("DB_HOST");
+            String dbPort = System.getenv("DB_PORT");
+            String dbUser = System.getenv("DB_USER");
+            String dbPass = System.getenv("DB_PASS");
             
-            // 2. Fetch Data
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT id, name, phone, created_at FROM customers ORDER BY id DESC");
+            String url = "jdbc:mysql://" + dbHost + ":" + dbPort + "/shop_db?useSSL=true&trustServerCertificate=true";
 
-            List<Customer> customerList = new ArrayList<>();
+            // 2. Fetch Data using Try-with-resources
+            try (Connection conn = DriverManager.getConnection(url, dbUser, dbPass);
+                 Statement stmt = conn.createStatement();
+                 ResultSet rs = stmt.executeQuery("SELECT id, name, phone, created_at FROM customers ORDER BY id DESC")) {
 
-            while (rs.next()) {
-                Customer c = new Customer();
-                c.setId(rs.getInt("id"));
-                c.setName(rs.getString("name"));
-                c.setPhone(rs.getString("phone"));
-                c.setDate(rs.getString("created_at")); 
-                customerList.add(c);
-            }
+                List<Customer> customerList = new ArrayList<>();
 
-            // 3. Convert List to JSON using GSON
-            Gson gson = new Gson();
-            String json = gson.toJson(customerList);
-            out.print(json);
-            
-            conn.close();
+                while (rs.next()) {
+                    Customer c = new Customer();
+                    // Matches the columns you created in Aiven
+                    c.setId(rs.getInt("id"));
+                    c.setName(rs.getString("name"));
+                    c.setPhone(rs.getString("phone"));
+                    c.setDate(rs.getString("created_at")); 
+                    customerList.add(c);
+                }
+
+                // 3. Convert List to JSON
+                Gson gson = new Gson();
+                out.print(gson.toJson(customerList));
+            } 
         } catch (Exception e) {
             e.printStackTrace();
             response.setStatus(500);
@@ -56,14 +61,13 @@ public class GetCustomersServlet extends HttpServlet {
     }
 }
 
-// Simple Helper Class (Place at bottom of file or in a new file)
+// Helper Class
 class Customer {
     private int id;
     private String name;
     private String phone;
     private String date;
 
-    // Getters and Setters
     public void setId(int id) { this.id = id; }
     public void setName(String name) { this.name = name; }
     public void setPhone(String phone) { this.phone = phone; }

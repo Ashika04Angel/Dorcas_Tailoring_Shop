@@ -15,16 +15,30 @@ public class DeleteBillServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String billId = request.getParameter("billId");
 
-        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/shop_db", "root", "admin")) {
-            String sql = "DELETE FROM bills WHERE id = ?";
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setInt(1, Integer.parseInt(billId));
-            
-            int rowsDeleted = ps.executeUpdate();
-            if (rowsDeleted > 0) {
-                response.getWriter().write("Success");
-            } else {
-                response.getWriter().write("Error: Bill not found");
+        // 1. Load Cloud Credentials
+        String dbHost = System.getenv("DB_HOST");
+        String dbPort = System.getenv("DB_PORT");
+        String dbUser = System.getenv("DB_USER");
+        String dbPass = System.getenv("DB_PASS");
+        String url = "jdbc:mysql://" + dbHost + ":" + dbPort + "/shop_db?useSSL=true&trustServerCertificate=true";
+
+        try {
+            // 2. Load the Driver
+            Class.forName("com.mysql.cj.jdbc.Driver");
+
+            // 3. Delete logic
+            try (Connection conn = DriverManager.getConnection(url, dbUser, dbPass)) {
+                // Matches the "id" column in your bills table
+                String sql = "DELETE FROM bills WHERE id = ?";
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ps.setInt(1, Integer.parseInt(billId));
+                
+                int rowsDeleted = ps.executeUpdate();
+                if (rowsDeleted > 0) {
+                    response.getWriter().write("Success");
+                } else {
+                    response.getWriter().write("Error: Bill not found");
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
