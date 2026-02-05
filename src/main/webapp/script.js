@@ -16,7 +16,7 @@ let currentCustomerId = null;
 // --- 1. NAVIGATION & CUSTOMER FETCHING ---
 
 const fetchAndRenderCustomers = () => {
-    return fetch('/TailorShop/getCustomers') 
+    return fetch('getCustomers') 
         .then(response => response.json())
         .then(data => {
             customers = data;
@@ -207,7 +207,7 @@ document.getElementById('generateBill').onclick = () => {
         params.append('total', total);
         params.append('items', JSON.stringify(items)); 
 
-        fetch('/TailorShop/saveBill', { method: 'POST', body: params })
+        fetch('saveBill', { method: 'POST', body: params })
         .then(res => res.text())
         .then(data => {
             if (data === "Success") {
@@ -293,7 +293,7 @@ window.deleteCustomer = (id) => {
     const params = new URLSearchParams();
     params.append('id', id);
 
-    fetch('/TailorShop/deleteCustomer', { method: 'POST', body: params })
+    fetch('deleteCustomer', { method: 'POST', body: params })
     .then(res => res.text())
     .then(data => {
         if (data === "Success") {
