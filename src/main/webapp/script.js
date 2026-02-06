@@ -403,13 +403,15 @@ document.getElementById('searchBar').addEventListener('input', function(e) {
         }
     }
 });
-window.viewCustomerHistory = (customerId, customerName) => {
-    fetch(`getHistory?customerId=${customerId}`)
-        .then(res => {
+window.viewCustomerHistory = function (customerId, customerName) {
+
+    fetch('getHistory?customerId=' + customerId)
+        .then(function (res) {
             if (!res.ok) throw new Error("Failed to load history");
             return res.json();
         })
-        .then(data => {
+        .then(function (data) {
+
             const titleEl = document.getElementById('historyTitle');
             const tbody = document.getElementById('historyTableBody');
             const modal = document.getElementById('historyModal');
@@ -420,48 +422,49 @@ window.viewCustomerHistory = (customerId, customerName) => {
                 return;
             }
 
-            titleEl.innerText = `Billing History – ${customerName}`;
+            titleEl.innerText = 'Billing History – ' + customerName;
             tbody.innerHTML = '';
 
             if (!Array.isArray(data) || data.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="4" class="p-6 text-center opacity-60">
-                            No bills found
-                        </td>
-                    </tr>`;
+                tbody.innerHTML =
+                    '<tr>' +
+                        '<td colspan="4" class="p-6 text-center opacity-60">' +
+                            'No bills found' +
+                        '</td>' +
+                    '</tr>';
             } else {
-                data.forEach(bill => {
+
+                data.forEach(function (bill) {
+
                     let itemsText = '—';
 
-                    // backend may send string OR array
                     try {
                         const items = Array.isArray(bill.items_json)
                             ? bill.items_json
                             : JSON.parse(bill.items_json || '[]');
 
                         itemsText = items
-                            .map(i => `${i.name} (${i.qty})`)
+                            .map(function (i) {
+                                return i.name + ' (' + i.qty + ')';
+                            })
                             .join(', ');
-                    } catch {
+                    } catch (e) {
                         itemsText = '—';
                     }
 
                     const tr = document.createElement('tr');
-                    tr.className =
-                        "border-b text-sm hover:bg-black/5 dark:hover:bg-white/5";
+                    tr.className = 'border-b text-sm hover:bg-black/5';
 
-                    tr.innerHTML = `
-                        <td class="p-3">${bill.bill_date}</td>
-                        <td class="p-3 text-right font-bold">₹${bill.total_amount}</td>
-                        <td class="p-3 text-xs">${itemsText}</td>
-                        <td class="p-3 text-center">
-                            <button onclick="deleteBill(${bill.id})"
-                                class="text-red-500 hover:text-red-700">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
+                    tr.innerHTML =
+                        '<td class="p-3">' + bill.bill_date + '</td>' +
+                        '<td class="p-3 text-right font-bold">₹' + bill.total_amount + '</td>' +
+                        '<td class="p-3 text-xs">' + itemsText + '</td>' +
+                        '<td class="p-3 text-center">' +
+                            '<button onclick="deleteBill(' + bill.id + ')" ' +
+                                'class="text-red-500 hover:text-red-700">' +
+                                '<i class="fas fa-trash"></i>' +
+                            '</button>' +
+                        '</td>';
 
                     tbody.appendChild(tr);
                 });
@@ -469,11 +472,16 @@ window.viewCustomerHistory = (customerId, customerName) => {
 
             modal.classList.remove('hidden');
         })
-        .catch(err => {
+        .catch(function (err) {
             console.error("History Fetch Error:", err);
             alert("Unable to load history");
         });
 };
+
+window.closeHistory = function () {
+    document.getElementById('historyModal').classList.add('hidden');
+};
+
 window.closeHistory = () => {
     document.getElementById('historyModal').classList.add('hidden');
 };
