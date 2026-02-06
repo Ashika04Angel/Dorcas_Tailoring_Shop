@@ -99,12 +99,16 @@ saveBtn.onclick = () => {
         return;
     }
 
-    const params = new URLSearchParams();
-    params.append('name', name);
-    params.append('phone', phone);
+	const payload = { name, phone };
 
-    fetch('saveCustomer', { method: 'POST', body: params })
-        .then(res => res.text())
+    fetch('saveCustomer', { method: 'POST',headers:{
+		'Content-Type': 'application/json'
+	}, body: JSON.stringify(payload) })
+	
+        .then(res => {
+			if (!res.ok) throw new Error('Server error');
+			 	 return res.text();
+		})
         .then(data => {
             if(data === "Success") {    
                 fetchAndRenderCustomers().then(() => {
@@ -113,13 +117,17 @@ saveBtn.onclick = () => {
             } else {
                 showStatus("Error saving customer.", false);
             }
-        });
+        })
+		.catch(err => {
+		        console.error("Fetch Error:", err);
+		        showStatus("Connection failed.", false);
+		    });
 };
 
 function showStatus(message, isSuccess) {
     const statusMsg = document.getElementById('statusMsg');
     statusMsg.innerText = message;
-    statusMsg.style.color = isSuccess ? "#CB3434" : "#140505"; 
+    statusMsg.style.color = isSuccess ? "#28a745" : "#CB3434"; 
     statusMsg.classList.remove('opacity-0');
     setTimeout(() => statusMsg.classList.add('opacity-0'), 3000);
 }
@@ -294,7 +302,9 @@ window.deleteCustomer = (id) => {
     params.append('id', id);
 
     fetch('deleteCustomer', { method: 'POST', body: params })
-    .then(res => res.text())
+    .then(res => 	{
+		if (!res.ok) throw new Error('Delete failed on server');
+	        return res.text();})
     .then(data => {
         if (data === "Success") {
             // Remove from local list and refresh UI

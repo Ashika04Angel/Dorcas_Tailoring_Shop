@@ -29,6 +29,11 @@ public class GetCustomersServlet extends HttpServlet {
             String dbUser = System.getenv("DB_USER");
             String dbPass = System.getenv("DB_PASS");
             
+         // Safety check for Environment Variables
+            if (url == null || dbUser == null) {
+                throw new Exception("Database environment variables are not set on the server.");
+            }
+            
 
             // 2. Fetch Data using Try-with-resources
             try (Connection conn = DriverManager.getConnection(url, dbUser, dbPass);
@@ -39,7 +44,6 @@ public class GetCustomersServlet extends HttpServlet {
 
                 while (rs.next()) {
                     Customer c = new Customer();
-                    // Matches the columns you created in Aiven
                     c.setId(rs.getInt("id"));
                     c.setName(rs.getString("name"));
                     c.setPhone(rs.getString("phone"));
@@ -51,7 +55,12 @@ public class GetCustomersServlet extends HttpServlet {
                 Gson gson = new Gson();
                 out.print(gson.toJson(customerList));
             } 
-        } catch (Exception e) {
+        } 
+        catch (ClassNotFoundException e) {
+            response.setStatus(500);
+            out.print("{\"error\":\"MySQL Driver not found in project!\"}");
+        }
+        catch (Exception e) {
             e.printStackTrace();
             response.setStatus(500);
             out.print("{\"error\":\"" + e.getMessage() + "\"}");
