@@ -14,64 +14,46 @@ import java.sql.PreparedStatement;
 @WebServlet("/saveCustomer")
 public class SaveCustomerServlet extends HttpServlet {
 
-    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
 
         String name = request.getParameter("name");
         String phone = request.getParameter("phone");
 
-        // ✅ 1. Validate input
-        if (name == null || name.trim().isEmpty()
-                || phone == null || phone.trim().isEmpty()) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("{\"error\":\"Name and phone are required\"}");
+        response.setContentType("text/plain");
+        response.setCharacterEncoding("UTF-8");
+
+        if (name == null || phone == null || name.isBlank() || phone.isBlank()) {
+            response.getWriter().write("Error: Missing data");
             return;
         }
 
-        // ✅ 2. Read environment variables
         String url = System.getenv("DB_URL");
         String dbUser = System.getenv("DB_USER");
         String dbPass = System.getenv("DB_PASS");
 
-        // ✅ 3. Validate environment variables
         if (url == null || dbUser == null || dbPass == null) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write(
-                "{\"error\":\"Database environment variables are not set\"}"
-            );
+            response.getWriter().write("Error: DB env vars missing");
             return;
         }
 
         try {
-            // ✅ 4. Load JDBC driver
             Class.forName("com.mysql.cj.jdbc.Driver");
 
-            String sql = "INSERT INTO customers (name, phone) VALUES (?, ?)";
+            try (Connection conn = DriverManager.getConnection(url, dbUser, dbPass)) {
 
-            // ✅ 5. Close ALL resources safely
-            try (
-                Connection conn = DriverManager.getConnection(url, dbUser, dbPass);
-                PreparedStatement ps = conn.prepareStatement(sql)
-            ) {
-                ps.setString(1, name.trim());
-                ps.setString(2, phone.trim());
+                String sql = "INSERT INTO customers (name, phone) VALUES (?, ?)";
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ps.setString(1, name);
+                ps.setString(2, phone);
 
                 ps.executeUpdate();
-
-                response.setStatus(HttpServletResponse.SC_OK);
-                response.getWriter().write("{\"status\":\"success\"}");
+                response.getWriter().write("Success");
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write(
-                "{\"error\":\"" + e.getMessage() + "\"}"
-            );
+            e.printStackTrace(); // 👈 VERY IMPORTANT for Render logs
+            response.getWriter().write("Error: " + e.getMessage());
         }
     }
 }
