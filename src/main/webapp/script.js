@@ -336,9 +336,9 @@ window.deleteCustomer = (id) => {
         if (data.trim().toLowerCase() === "success") {
             customers = customers.filter(c => c.id !== id);
             fetchAndRenderCustomers();
-            alert("Customer deleted.");
+           // alert("Customer deleted.");
         } else {
-            alert("Delete failed: " + data);
+           // alert("Delete failed: " + data);
         }
     })
     .catch(err => {
@@ -358,18 +358,6 @@ document.getElementById('backToView').onclick = () => {
     document.getElementById('itemsPage').classList.add('hidden');
     // Show the main entry page
     document.getElementById('enter_details').classList.remove('hidden');
-};
-document.getElementById('itemEntry').onclick = () => {
-    const name = nameInput.value.trim();
-    const phone = numberInput.value.trim();
-
-    if (!name || !phone) {
-        alert("Please enter Customer Name and Phone Number first!");
-        return;
-    }
-
-   
-    window.showItemsPage(name, phone);
 };
 // search bar
 document.getElementById('searchBar').addEventListener('input', function(e) {
@@ -499,7 +487,10 @@ window.deleteBill = function (billId) {
         return res.text();
     })
     .then(function () {
-        alert("Bill deleted successfully");
+		showToast("Bill deleted successfully");
+		showToast("Failed to delete bill", false);
+
+
 
         // ✅ close history modal
         const modal = document.getElementById('historyModal');
@@ -515,6 +506,19 @@ window.deleteBill = function (billId) {
         alert("Failed to delete bill");
     });
 };
+function showToast(message, success = true) {
+    const toast = document.getElementById("toast");
+    toast.innerText = message;
+    toast.className =
+        `fixed bottom-5 right-5 px-4 py-2 rounded-lg text-white text-sm shadow-lg z-50
+         ${success ? "bg-green-600" : "bg-red-600"}`;
+
+    toast.classList.remove("hidden");
+
+    setTimeout(() => {
+        toast.classList.add("hidden");
+    }, 2500);
+}
 
 
 
