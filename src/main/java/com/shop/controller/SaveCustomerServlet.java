@@ -27,7 +27,7 @@ public class SaveCustomerServlet extends HttpServlet {
             
             // 3. Try-with-resources automatically closes the connection
             try (Connection conn = DriverManager.getConnection(url, dbUser, dbPass)) {
-                
+            	conn.setCatalog("shop_db");
                 String sql = "INSERT INTO customers (name, phone) VALUES (?, ?)";
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ps.setString(1, name);
