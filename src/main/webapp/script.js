@@ -479,11 +479,14 @@ window.deleteBill = function (billId) {
         return;
     }
 
-    fetch('deleteBill?billId=' + billId) // GET is enough
-        .then(function (res) {
-            if (!res.ok) throw new Error("Delete failed");
-            return res.text();
-        })
+	fetch('deleteBill', {
+	    method: 'POST',
+	    headers: {
+	        'Content-Type': 'application/x-www-form-urlencoded'
+	    },
+	    body: 'billId=' + billId
+	})
+
         .then(function () {
             showToast("Bill deleted successfully", true);
 
