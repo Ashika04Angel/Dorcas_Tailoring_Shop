@@ -408,11 +408,14 @@ document.getElementById('searchBar').addEventListener('input', function(e) {
         }
     }
 });
-window.viewCustomerHistory = function (customerId, customerName) {
 
+window.closeHistory = function () {
+    document.getElementById('historyModal').classList.add('hidden');
+};
+
+window.viewCustomerHistory = function (customerId, customerName) {
     fetch('getHistory?customerId=' + customerId)
         .then(function (res) {
-            if (!res.ok) throw new Error("Failed to load history");
             return res.json();
         })
         .then(function (data) {
@@ -422,7 +425,6 @@ window.viewCustomerHistory = function (customerId, customerName) {
             const modal = document.getElementById('historyModal');
 
             if (!titleEl || !tbody || !modal) {
-                console.error("History modal elements missing in HTML");
                 alert("History UI not loaded");
                 return;
             }
@@ -438,34 +440,34 @@ window.viewCustomerHistory = function (customerId, customerName) {
                         '</td>' +
                     '</tr>';
             } else {
-
                 data.forEach(function (bill) {
 
-                    let itemsText = '—';
+                    const billDate = bill.bill_date || bill.date || '—';
+                    const total = bill.total_amount || bill.total || 0;
+                    const billId = bill.id || bill.bill_id;
 
+                    let itemsText = '—';
                     try {
                         const items = Array.isArray(bill.items_json)
                             ? bill.items_json
-                            : JSON.parse(bill.items_json || '[]');
+                            : JSON.parse(bill.items_json || bill.items || '[]');
 
                         itemsText = items
                             .map(function (i) {
                                 return i.name + ' (' + i.qty + ')';
                             })
                             .join(', ');
-                    } catch (e) {
-                        itemsText = '—';
-                    }
+                    } catch (e) {}
 
                     const tr = document.createElement('tr');
-                    tr.className = 'border-b text-sm hover:bg-black/5';
+                    tr.className = 'border-b text-sm hover:bg-black/5 dark:hover:bg-white/5';
 
                     tr.innerHTML =
-                        '<td class="p-3">' + bill.bill_date + '</td>' +
-                        '<td class="p-3 text-right font-bold">₹' + bill.total_amount + '</td>' +
+                        '<td class="p-3">' + billDate + '</td>' +
+                        '<td class="p-3 text-right font-bold">₹' + total + '</td>' +
                         '<td class="p-3 text-xs">' + itemsText + '</td>' +
                         '<td class="p-3 text-center">' +
-                            '<button onclick="deleteBill(' + bill.id + ')" ' +
+                            '<button onclick="deleteBill(' + billId + ')" ' +
                                 'class="text-red-500 hover:text-red-700">' +
                                 '<i class="fas fa-trash"></i>' +
                             '</button>' +
@@ -478,11 +480,41 @@ window.viewCustomerHistory = function (customerId, customerName) {
             modal.classList.remove('hidden');
         })
         .catch(function (err) {
-            console.error("History Fetch Error:", err);
+            console.error(err);
             alert("Unable to load history");
         });
 };
 
-window.closeHistory = function () {
-    document.getElementById('historyModal').classList.add('hidden');
+window.deleteBill = function (billId) {
+
+    if (!confirm("Are you sure you want to delete this bill?")) {
+        return;
+    }
+
+    fetch('deleteBill?billId=' + billId, {
+        method: 'GET'   // use GET since servlet usually expects it
+    })
+    .then(function (res) {
+        if (!res.ok) throw new Error("Delete failed");
+        return res.text();
+    })
+    .then(function () {
+        alert("Bill deleted successfully");
+
+        // ✅ close history modal
+        const modal = document.getElementById('historyModal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+
+        // ✅ refresh page so data updates cleanly
+        location.reload();
+    })
+    .catch(function (err) {
+        console.error(err);
+        alert("Failed to delete bill");
+    });
 };
+
+
+
