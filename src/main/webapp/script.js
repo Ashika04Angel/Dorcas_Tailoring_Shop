@@ -1,3 +1,8 @@
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("DOM fully loaded");
+});
+
+
 // --- Elements Selection ---
 const nameInput = document.getElementById('name');
 const numberInput = document.getElementById('number');
@@ -479,9 +484,5 @@ window.viewCustomerHistory = function (customerId, customerName) {
 };
 
 window.closeHistory = function () {
-    document.getElementById('historyModal').classList.add('hidden');
-};
-
-window.closeHistory = () => {
     document.getElementById('historyModal').classList.add('hidden');
 };
