@@ -17,12 +17,21 @@ let currentCustomerId = null;
 
 const fetchAndRenderCustomers = () => {
     return fetch('getCustomers') 
-        .then(response => response.json())
+        .then(response => {
+			if (!response.ok) {
+			      throw new Error('Failed to fetch customers');
+			    }
+			    return response.json();
+		})
         .then(data => {
-            customers = data;
+           customers = Array.isArray(data) ? data : [];
             renderRecords();
         })
-        .catch(error => console.error("Fetch Error:", error));
+        .catch(error => {
+			console.error("Fetch Error:", error);
+			recordList.innerHTML =
+			   '<p class="text-center text-red-500 py-10">Failed to load customers</p>';
+		});
 };
 
 viewBtn.addEventListener('click', () => {
@@ -219,7 +228,10 @@ document.getElementById('generateBill').onclick = () => {
         params.append('items', JSON.stringify(items)); 
 
         fetch('saveBill', { method: 'POST', body: params })
-        .then(res => res.text())
+        .then(res => {
+			if (!res.ok) throw new Error("Bill save failed");
+			        return res.text();
+		})
         .then(data => {
             if (data === "Success") {
                 showStatus("Bill Saved to Database!", true);
@@ -312,7 +324,7 @@ window.deleteCustomer = (id) => {
         if (data === "Success") {
             // Remove from local list and refresh UI
             customers = customers.filter(c => c.id !== id);
-            renderRecords(); 
+			fetchAndRenderCustomers();
             alert("Customer deleted.");
         } else {
             alert("Delete failed: " + data);
@@ -381,3 +393,16 @@ document.getElementById('searchBar').addEventListener('input', function(e) {
         }
     }
 });
+window.viewCustomerHistory = (id, name) => {
+    // You need a way to show history. 
+    // Usually, you'd fetch it like this:
+    fetch(`getHistory?customerId=${id}`)
+        .then(res => res.json())
+        .then(data => {
+            console.log("History for " + name, data);
+            // Here you would open a modal or div to show the list of bills
+            if(data.length === 0) alert("No history found for this customer.");
+            else alert("Found " + data.length + " previous bills. (Implement your history UI here)");
+        })
+        .catch(err => console.error("History Fetch Error:", err));
+};

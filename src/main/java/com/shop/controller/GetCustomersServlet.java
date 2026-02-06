@@ -30,13 +30,14 @@ public class GetCustomersServlet extends HttpServlet {
             String dbPass = System.getenv("DB_PASS");
             
          // Safety check for Environment Variables
-            if (url == null || dbUser == null) {
+            if (url == null || dbUser == null || dbPass == null) {
                 throw new Exception("Database environment variables are not set on the server.");
             }
             
 
             // 2. Fetch Data using Try-with-resources
             try (Connection conn = DriverManager.getConnection(url, dbUser, dbPass);
+            		
                  Statement stmt = conn.createStatement();
                  ResultSet rs = stmt.executeQuery("SELECT id, name, phone, created_at FROM customers ORDER BY id DESC")) {
 
