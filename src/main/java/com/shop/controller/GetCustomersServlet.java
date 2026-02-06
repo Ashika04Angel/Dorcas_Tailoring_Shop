@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import com.google.gson.Gson; 
 
-@WebServlet("getCustomers")
+@WebServlet("/getCustomers")
 public class GetCustomersServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("application/json");
