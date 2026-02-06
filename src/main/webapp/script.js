@@ -129,7 +129,7 @@ saveBtn.onclick = () => {
         .then(data => {
 			if (data.trim().toLowerCase() === "success") {
 			        fetchAndRenderCustomers().then(() => {
-			            showStatus("Customer saved! Now you can click 'Add Details'.", true);
+			            showStatus("Customer saved!", true);
 			        });
 			    } else {
 			        console.warn("Unexpected response:", data);
@@ -147,7 +147,7 @@ function showStatus(message, isSuccess) {
     statusMsg.innerText = message;
     statusMsg.style.color = isSuccess ? "#28a745" : "#CB3434"; 
     statusMsg.classList.remove('opacity-0');
-    setTimeout(() => statusMsg.classList.add('opacity-0'), 3000);
+    setTimeout(() => statusMsg.classList.add('opacity-0'), 2000);
 }
 
 // --- 3. ITEMS & BILLING LOGIC ---
@@ -479,33 +479,24 @@ window.deleteBill = function (billId) {
         return;
     }
 
-    fetch('deleteBill?billId=' + billId, {
-        method: 'GET'   // use GET since servlet usually expects it
-    })
-    .then(function (res) {
-        if (!res.ok) throw new Error("Delete failed");
-        return res.text();
-    })
-    .then(function () {
-		showToast("Bill deleted successfully");
-		showToast("Failed to delete bill", false);
+    fetch('deleteBill?billId=' + billId) // GET is enough
+        .then(function (res) {
+            if (!res.ok) throw new Error("Delete failed");
+            return res.text();
+        })
+        .then(function () {
+            showToast("Bill deleted successfully", true);
 
-
-
-        // ✅ close history modal
-        const modal = document.getElementById('historyModal');
-        if (modal) {
-            modal.classList.add('hidden');
-        }
-
-        // ✅ refresh page so data updates cleanly
-        location.reload();
-    })
-    .catch(function (err) {
-        console.error(err);
-        alert("Failed to delete bill");
-    });
+            // optional: refresh history or close modal
+            document.getElementById('historyModal')
+                .classList.add('hidden');
+        })
+        .catch(function (err) {
+            console.error(err);
+            showToast("Failed to delete bill", false);
+        });
 };
+
 function showToast(message, success = true) {
     const toast = document.getElementById("toast");
     toast.innerText = message;
