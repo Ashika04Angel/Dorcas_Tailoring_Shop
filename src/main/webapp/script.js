@@ -122,13 +122,14 @@ saveBtn.onclick = () => {
 			 	 return res.text();
 		})
         .then(data => {
-            if(data === "Success") {    
-                fetchAndRenderCustomers().then(() => {
-                    showStatus("Customer saved! Now you can click 'Add Details'.", true);
-                });
-            } else {
-                showStatus("Error saving customer.", false);
-            }
+			if (data.trim().toLowerCase() === "success") {
+			        fetchAndRenderCustomers().then(() => {
+			            showStatus("Customer saved! Now you can click 'Add Details'.", true);
+			        });
+			    } else {
+			        console.warn("Unexpected response:", data);
+			        showStatus("Error saving customer.", false);
+			    }
         })
 		.catch(err => {
 		        console.error("Fetch Error:", err);
@@ -311,27 +312,36 @@ fetchAndRenderCustomers();
 
 // Delete the customer
 window.deleteCustomer = (id) => {
-    if(!confirm("Are you sure you want to delete this customer?")) return;
-    
+    if (!confirm("Are you sure you want to delete this customer?")) return;
+
     const params = new URLSearchParams();
     params.append('id', id);
 
-    fetch('deleteCustomer', { method: 'POST', body: params })
-    .then(res => 	{
-		if (!res.ok) throw new Error('Delete failed on server');
-	        return res.text();})
+    fetch('deleteCustomer', { 
+        method: 'POST', 
+        body: params 
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('Delete failed on server');
+        return res.text();
+    })
     .then(data => {
-        if (data === "Success") {
-            // Remove from local list and refresh UI
+        console.log("Delete response:", JSON.stringify(data));
+
+        if (data.trim().toLowerCase() === "success") {
             customers = customers.filter(c => c.id !== id);
-			fetchAndRenderCustomers();
+            fetchAndRenderCustomers();
             alert("Customer deleted.");
         } else {
             alert("Delete failed: " + data);
         }
     })
-    .catch(err => console.error("Error:", err));
+    .catch(err => {
+        console.error("Error:", err);
+        alert("Connection error while deleting.");
+    });
 };
+
 window.closeBill = () => {
     const modal = document.getElementById('billModal');
     if (modal) {
