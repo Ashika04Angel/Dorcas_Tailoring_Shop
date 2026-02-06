@@ -66,13 +66,15 @@ public class SaveBillServlet extends HttpServlet {
 
              
                 String billSql =
-                        "INSERT INTO bills (customer_id, total_amount) VALUES (?, ?)";
+                	    "INSERT INTO bills (customer_id, total_amount, items_json) VALUES (?, ?, ?)";
 
+                		
                 PreparedStatement billPs =
                         conn.prepareStatement(billSql, PreparedStatement.RETURN_GENERATED_KEYS);
 
                 billPs.setInt(1, customerId);
                 billPs.setDouble(2, total);
+                billPs.setString(3, itemsJson);   
                 billPs.executeUpdate();
 
              
