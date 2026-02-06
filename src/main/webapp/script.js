@@ -410,10 +410,17 @@ window.viewCustomerHistory = (customerId, customerName) => {
             return res.json();
         })
         .then(data => {
-            document.getElementById('historyTitle').innerText =
-                `Billing History – ${customerName}`;
-
+            const titleEl = document.getElementById('historyTitle');
             const tbody = document.getElementById('historyTableBody');
+            const modal = document.getElementById('historyModal');
+
+            if (!titleEl || !tbody || !modal) {
+                console.error("History modal elements missing in HTML");
+                alert("History UI not loaded");
+                return;
+            }
+
+            titleEl.innerText = `Billing History – ${customerName}`;
             tbody.innerHTML = '';
 
             if (!Array.isArray(data) || data.length === 0) {
@@ -427,11 +434,17 @@ window.viewCustomerHistory = (customerId, customerName) => {
                 data.forEach(bill => {
                     let itemsText = '—';
 
-                    // ✅ items_json may already be an array
-                    if (Array.isArray(bill.items_json)) {
-                        itemsText = bill.items_json
+                    // backend may send string OR array
+                    try {
+                        const items = Array.isArray(bill.items_json)
+                            ? bill.items_json
+                            : JSON.parse(bill.items_json || '[]');
+
+                        itemsText = items
                             .map(i => `${i.name} (${i.qty})`)
                             .join(', ');
+                    } catch {
+                        itemsText = '—';
                     }
 
                     const tr = document.createElement('tr');
@@ -440,13 +453,11 @@ window.viewCustomerHistory = (customerId, customerName) => {
 
                     tr.innerHTML = `
                         <td class="p-3">${bill.bill_date}</td>
-                        <td class="p-3 text-right font-bold">
-                            ₹${bill.total_amount}
-                        </td>
+                        <td class="p-3 text-right font-bold">₹${bill.total_amount}</td>
                         <td class="p-3 text-xs">${itemsText}</td>
                         <td class="p-3 text-center">
                             <button onclick="deleteBill(${bill.id})"
-                              class="text-red-500 hover:text-red-700">
+                                class="text-red-500 hover:text-red-700">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </td>
@@ -456,35 +467,13 @@ window.viewCustomerHistory = (customerId, customerName) => {
                 });
             }
 
-            document.getElementById('historyModal')
-                .classList.remove('hidden');
+            modal.classList.remove('hidden');
         })
         .catch(err => {
             console.error("History Fetch Error:", err);
             alert("Unable to load history");
         });
 };
-
 window.closeHistory = () => {
     document.getElementById('historyModal').classList.add('hidden');
 };
-const toggleBtn = document.getElementById('darkToggle');
-const root = document.documentElement;
-
-// Load saved preference
-if (localStorage.getItem('darkMode') === 'on') {
-    root.classList.add('dark');
-    toggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
-}
-
-toggleBtn.onclick = () => {
-    root.classList.toggle('dark');
-
-    const isDark = root.classList.contains('dark');
-    localStorage.setItem('darkMode', isDark ? 'on' : 'off');
-
-    toggleBtn.innerHTML = isDark
-        ? '<i class="fas fa-sun"></i>'
-        : '<i class="fas fa-moon"></i>';
-};
-
