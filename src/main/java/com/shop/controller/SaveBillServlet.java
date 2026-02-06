@@ -61,12 +61,10 @@ public class SaveBillServlet extends HttpServlet {
 
             try (Connection conn = DriverManager.getConnection(url, dbUser, dbPass)) {
 
-                // 🔐 TRANSACTION START
+               
                 conn.setAutoCommit(false);
 
-                /* --------------------
-                   1️⃣ Insert into bills
-                   -------------------- */
+             
                 String billSql =
                         "INSERT INTO bills (customer_id, total_amount) VALUES (?, ?)";
 
@@ -77,7 +75,7 @@ public class SaveBillServlet extends HttpServlet {
                 billPs.setDouble(2, total);
                 billPs.executeUpdate();
 
-                // 🔑 Get generated bill_id
+             
                 ResultSet keys = billPs.getGeneratedKeys();
                 int billId;
                 if (keys.next()) {
@@ -88,17 +86,13 @@ public class SaveBillServlet extends HttpServlet {
                     return;
                 }
 
-                /* --------------------
-                   2️⃣ Parse items JSON
-                   -------------------- */
+               
                 Gson gson = new Gson();
                 Type listType = new TypeToken<List<Map<String, Object>>>() {}.getType();
                 List<Map<String, Object>> items =
                         gson.fromJson(itemsJson, listType);
 
-                /* --------------------
-                   3️⃣ Insert bill_items
-                   -------------------- */
+               
                 String itemSql =
                         "INSERT INTO bill_items (bill_id, item_name, quantity, price) VALUES (?, ?, ?, ?)";
 
@@ -114,7 +108,7 @@ public class SaveBillServlet extends HttpServlet {
 
                 itemPs.executeBatch();
 
-                // ✅ COMMIT EVERYTHING
+             
                 conn.commit();
                 response.getWriter().write("Success");
             }

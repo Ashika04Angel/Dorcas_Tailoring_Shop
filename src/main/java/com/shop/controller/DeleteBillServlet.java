@@ -23,7 +23,6 @@ public class DeleteBillServlet extends HttpServlet {
 
         String billId = request.getParameter("billId");
 
-        // ✅ 1. Validate request parameter
         if (billId == null || !billId.matches("\\d+")) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().write(
@@ -32,12 +31,12 @@ public class DeleteBillServlet extends HttpServlet {
             return;
         }
 
-        // ✅ 2. Read environment variables
+       
         String url = System.getenv("DB_URL");
         String dbUser = System.getenv("DB_USER");
         String dbPass = System.getenv("DB_PASS");
 
-        // ✅ 3. Validate environment variables
+        
         if (url == null || dbUser == null || dbPass == null) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.getWriter().write(
@@ -47,12 +46,12 @@ public class DeleteBillServlet extends HttpServlet {
         }
 
         try {
-            // ✅ 4. Load JDBC driver
+           
             Class.forName("com.mysql.cj.jdbc.Driver");
 
             String sql = "DELETE FROM bills WHERE id = ?";
 
-            // ✅ 5. Close ALL JDBC resources safely
+        
             try (
                 Connection conn = DriverManager.getConnection(url, dbUser, dbPass);
                 PreparedStatement ps = conn.prepareStatement(sql)

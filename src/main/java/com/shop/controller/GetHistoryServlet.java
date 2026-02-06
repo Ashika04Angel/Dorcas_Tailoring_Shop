@@ -37,12 +37,11 @@ public class GetHistoryServlet extends HttpServlet {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
 
-            String sql = """
-                SELECT id, bill_date, total_amount, items_json
-                FROM bills
-                WHERE customer_id = ?
-                ORDER BY bill_date DESC
-            """;
+            String sql =
+                "SELECT id, bill_date, total_amount, items_json " +
+                "FROM bills " +
+                "WHERE customer_id = ? " +
+                "ORDER BY bill_date DESC";
 
             try (
                 Connection conn = DriverManager.getConnection(url, dbUser, dbPass);
@@ -60,14 +59,22 @@ public class GetHistoryServlet extends HttpServlet {
 
                         json.append("{")
                             .append("\"id\":").append(rs.getInt("id")).append(",")
-                            .append("\"date\":\"").append(rs.getTimestamp("bill_date")).append("\",")
-                            .append("\"total\":").append(rs.getDouble("total_amount")).append(",")
 
-                            // 👇 SAFELY embed JSON text
-                            .append("\"items\":")
-                            .append(rs.getString("items_json") != null
+                            // ✅ MATCH FRONTEND FIELD NAMES
+                            .append("\"bill_date\":\"")
+                            .append(rs.getTimestamp("bill_date"))
+                            .append("\",")
+
+                            .append("\"total_amount\":")
+                            .append(rs.getDouble("total_amount"))
+                            .append(",")
+
+                            .append("\"items_json\":")
+                            .append(
+                                rs.getString("items_json") != null
                                     ? rs.getString("items_json")
-                                    : "[]")
+                                    : "[]"
+                            )
                             .append("}");
 
                         first = false;
