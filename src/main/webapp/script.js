@@ -16,7 +16,7 @@ let currentCustomerId = null;
 // --- 1. NAVIGATION & CUSTOMER FETCHING ---
 
 const fetchAndRenderCustomers = () => {
-    return fetch('/getCustomers') 
+    return fetch('getCustomers') 
         .then(response => response.json())
         .then(data => {
             customers = data;
@@ -99,11 +99,14 @@ saveBtn.onclick = () => {
         return;
     }
 
-	const payload = { name, phone };
+	const params = new URLSearchParams();
+	    params.append('name', name);
+	    params.append('phone', phone);
 
-    fetch('/saveCustomer', { method: 'POST',headers:{
-		'Content-Type': 'application/json'
-	}, body: JSON.stringify(payload) })
+		fetch('saveCustomer', { 
+		        method: 'POST', 
+		        body: params 
+		    })
 	
         .then(res => {
 			if (!res.ok) throw new Error('Server error');
@@ -301,7 +304,7 @@ window.deleteCustomer = (id) => {
     const params = new URLSearchParams();
     params.append('id', id);
 
-    fetch('/deleteCustomer', { method: 'POST', body: params })
+    fetch('deleteCustomer', { method: 'POST', body: params })
     .then(res => 	{
 		if (!res.ok) throw new Error('Delete failed on server');
 	        return res.text();})
