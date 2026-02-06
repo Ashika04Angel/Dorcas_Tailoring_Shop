@@ -101,7 +101,7 @@ saveBtn.onclick = () => {
 
 	const payload = { name, phone };
 
-    fetch('saveCustomer', { method: 'POST',headers:{
+    fetch('/saveCustomer', { method: 'POST',headers:{
 		'Content-Type': 'application/json'
 	}, body: JSON.stringify(payload) })
 	
