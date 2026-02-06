@@ -2,15 +2,10 @@ package com.shop.controller;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.*;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 
 @WebServlet("/getHistory")
 public class GetHistoryServlet extends HttpServlet {
@@ -24,38 +19,31 @@ public class GetHistoryServlet extends HttpServlet {
 
         String cid = request.getParameter("customerId");
 
-        // ✅ 1. Validate request parameter
+        // 1️⃣ Validate input
         if (cid == null || !cid.matches("\\d+")) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("{\"error\":\"Invalid customerId\"}");
+            response.getWriter().write("[]");
             return;
         }
 
-        // ✅ 2. Read environment variables
         String url = System.getenv("DB_URL");
         String dbUser = System.getenv("DB_USER");
         String dbPass = System.getenv("DB_PASS");
 
-        // ✅ 3. Validate environment variables
         if (url == null || dbUser == null || dbPass == null) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write(
-                "{\"error\":\"Database environment variables are not set\"}"
-            );
+            response.getWriter().write("[]");
             return;
         }
 
         try {
-            // ✅ 4. Load MySQL driver
             Class.forName("com.mysql.cj.jdbc.Driver");
 
-            String sql =
-                "SELECT id, bill_date, total_amount, items_json " +
-                "FROM bills " +
-                "WHERE customer_id = ? " +
-                "ORDER BY bill_date DESC";
+            String sql = """
+                SELECT id, bill_date, total_amount, items_json
+                FROM bills
+                WHERE customer_id = ?
+                ORDER BY bill_date DESC
+            """;
 
-            // ✅ 5. Use try-with-resources for ALL DB objects
             try (
                 Connection conn = DriverManager.getConnection(url, dbUser, dbPass);
                 PreparedStatement ps = conn.prepareStatement(sql)
@@ -70,20 +58,17 @@ public class GetHistoryServlet extends HttpServlet {
                     while (rs.next()) {
                         if (!first) json.append(",");
 
-                        int billId = rs.getInt("id");
-                        String date = rs.getString("bill_date");
-                        double total = rs.getDouble("total_amount");
-                        String items = rs.getString("items_json");
+                        json.append("{")
+                            .append("\"id\":").append(rs.getInt("id")).append(",")
+                            .append("\"date\":\"").append(rs.getTimestamp("bill_date")).append("\",")
+                            .append("\"total\":").append(rs.getDouble("total_amount")).append(",")
 
-                        json.append("{");
-                        json.append("\"id\":").append(billId).append(",");
-                        json.append("\"bill_date\":\"")
-                            .append(date != null ? date : "No Date")
-                            .append("\",");
-                        json.append("\"total_amount\":").append(total).append(",");
-                        json.append("\"items_json\":")
-                            .append((items != null && !items.isEmpty()) ? items : "[]");
-                        json.append("}");
+                            // 👇 SAFELY embed JSON text
+                            .append("\"items\":")
+                            .append(rs.getString("items_json") != null
+                                    ? rs.getString("items_json")
+                                    : "[]")
+                            .append("}");
 
                         first = false;
                     }
@@ -95,10 +80,7 @@ public class GetHistoryServlet extends HttpServlet {
 
         } catch (Exception e) {
             e.printStackTrace();
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write(
-                "{\"error\":\"" + e.getMessage() + "\"}"
-            );
+            response.getWriter().write("[]");
         }
     }
 }

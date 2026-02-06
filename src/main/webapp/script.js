@@ -403,16 +403,88 @@ document.getElementById('searchBar').addEventListener('input', function(e) {
         }
     }
 });
-window.viewCustomerHistory = (id, name) => {
-    // You need a way to show history. 
-    // Usually, you'd fetch it like this:
-    fetch(`getHistory?customerId=${id}`)
-        .then(res => res.json())
-        .then(data => {
-            console.log("History for " + name, data);
-            // Here you would open a modal or div to show the list of bills
-            if(data.length === 0) alert("No history found for this customer.");
-            else alert("Found " + data.length + " previous bills. (Implement your history UI here)");
+window.viewCustomerHistory = (customerId, customerName) => {
+    fetch(`getHistory?customerId=${customerId}`)
+        .then(res => {
+            if (!res.ok) throw new Error("Failed to load history");
+            return res.json();
         })
-        .catch(err => console.error("History Fetch Error:", err));
+        .then(data => {
+            document.getElementById('historyTitle').innerText =
+                `Billing History – ${customerName}`;
+
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = '';
+
+            if (!Array.isArray(data) || data.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="p-6 text-center opacity-60">
+                            No bills found
+                        </td>
+                    </tr>`;
+            } else {
+                data.forEach(bill => {
+                    let itemsText = '—';
+
+                    // ✅ items_json may already be an array
+                    if (Array.isArray(bill.items_json)) {
+                        itemsText = bill.items_json
+                            .map(i => `${i.name} (${i.qty})`)
+                            .join(', ');
+                    }
+
+                    const tr = document.createElement('tr');
+                    tr.className =
+                        "border-b text-sm hover:bg-black/5 dark:hover:bg-white/5";
+
+                    tr.innerHTML = `
+                        <td class="p-3">${bill.bill_date}</td>
+                        <td class="p-3 text-right font-bold">
+                            ₹${bill.total_amount}
+                        </td>
+                        <td class="p-3 text-xs">${itemsText}</td>
+                        <td class="p-3 text-center">
+                            <button onclick="deleteBill(${bill.id})"
+                              class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+
+                    tbody.appendChild(tr);
+                });
+            }
+
+            document.getElementById('historyModal')
+                .classList.remove('hidden');
+        })
+        .catch(err => {
+            console.error("History Fetch Error:", err);
+            alert("Unable to load history");
+        });
 };
+
+window.closeHistory = () => {
+    document.getElementById('historyModal').classList.add('hidden');
+};
+const toggleBtn = document.getElementById('darkToggle');
+const root = document.documentElement;
+
+// Load saved preference
+if (localStorage.getItem('darkMode') === 'on') {
+    root.classList.add('dark');
+    toggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+}
+
+toggleBtn.onclick = () => {
+    root.classList.toggle('dark');
+
+    const isDark = root.classList.contains('dark');
+    localStorage.setItem('darkMode', isDark ? 'on' : 'off');
+
+    toggleBtn.innerHTML = isDark
+        ? '<i class="fas fa-sun"></i>'
+        : '<i class="fas fa-moon"></i>';
+};
+
