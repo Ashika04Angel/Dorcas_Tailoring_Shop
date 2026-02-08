@@ -54,7 +54,7 @@ viewBtn.addEventListener('click', () => {
         closeViewBtn = document.createElement('button');
         closeViewBtn.id = "closeViewBox";
         closeViewBtn.innerHTML = '<i class="fas fa-times"></i>'; 
-        closeViewBtn.className = "absolute top-4 right-5 text-[#E1EBEE] hover:text-red-500 text-3xl cursor-pointer z-50 p-2 leading-none";
+        closeViewBtn.className = "absolute top-4 right-5 text-red-300 hover:text-red-500 text-3xl cursor-pointer z-50 p-2 leading-none";
         closeViewBtn.onclick = () => {
             viewRecordDiv.classList.add('hidden');
             enterDetailsDiv.classList.remove('hidden');
@@ -93,7 +93,7 @@ function renderFilteredRecords(list) {
                 <button onclick="window.showItemsPage('${customer.name}', '${customer.phone}', ${customer.id})" class="bg-[#0E3386] text-white p-2 rounded hover:bg-[#DE7D7D] w-10 h-10">
                     <i class="fas fa-plus"></i>
                 </button>
-                <button onclick="deleteCustomer(${customer.id})" class="text-[#B0C4DE] p-2 hover:text-red-700 w-10 h-10">
+                <button onclick="deleteCustomer(${customer.id})" class="text-red-400 p-2 hover:text-red-700 w-10 h-10">
                     <i class="fas fa-trash-alt"></i>
                 </button>
             </div>
@@ -167,7 +167,7 @@ window.createItemRow = (itemName) => {
             <button class="bg-gray-200 px-3 py-1 rounded" onclick="changeQty(this, 1)">+</button>
         </td>
         <td class="p-2"><input type="number" placeholder="₹" class="amt border p-2 w-full rounded" oninput="updateTotal()"></td>
-        <td class="p-2 text-center"><button class="text-[#B0C4DE]" onclick="this.closest('tr').remove(); window.updateTotal();">✖</button></td>
+        <td class="p-2 text-center"><button class="text-red-500" onclick="this.closest('tr').remove(); window.updateTotal();">✖</button></td>
     `;
     document.getElementById('itemList').appendChild(tr);
 };
@@ -554,6 +554,3 @@ Thank you!`;
 
     window.open(whatsappUrl, '_blank');
 };
-
-
-
