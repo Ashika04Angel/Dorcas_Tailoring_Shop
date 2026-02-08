@@ -82,18 +82,18 @@ function renderFilteredRecords(list) {
         div.className = "p-4 bg-gray-50 border rounded-lg flex justify-between items-center w-full shadow-sm mb-3";
         div.innerHTML = `
             <div class="flex flex-col text-left">
-                <span class="text-[10px] text-[#D45959] font-bold uppercase">${customer.date || 'Today'}</span>
-                <span class="font-bold text-[#D45959] text-lg cursor-pointer hover:text-[#CB3434]" 
+                <span class="text-[10px] text-[#002D62] font-bold uppercase">${customer.date || 'Today'}</span>
+                <span class="font-bold text-[#002D62] text-lg cursor-pointer hover:text-[#CB3434]" 
                       onclick="window.viewCustomerHistory(${customer.id}, '${customer.name}')">
                     ${customer.name}
                 </span>
-                <span class="text-[#D45959] font-medium">${customer.phone}</span>
+                <span class="text-[#002D62] font-medium">${customer.phone}</span>
             </div>
             <div class="flex gap-2">
-                <button onclick="window.showItemsPage('${customer.name}', '${customer.phone}', ${customer.id})" class="bg-[#CB3434] text-white p-2 rounded hover:bg-[#DE7D7D] w-10 h-10">
+                <button onclick="window.showItemsPage('${customer.name}', '${customer.phone}', ${customer.id})" class="bg-[#0E3386] text-white p-2 rounded hover:bg-[#DE7D7D] w-10 h-10">
                     <i class="fas fa-plus"></i>
                 </button>
-                <button onclick="deleteCustomer(${customer.id})" class="text-red-500 p-2 hover:text-red-700 w-10 h-10">
+                <button onclick="deleteCustomer(${customer.id})" class="text-[#B0C4DE] p-2 hover:text-red-700 w-10 h-10">
                     <i class="fas fa-trash-alt"></i>
                 </button>
             </div>
@@ -167,7 +167,7 @@ window.createItemRow = (itemName) => {
             <button class="bg-gray-200 px-3 py-1 rounded" onclick="changeQty(this, 1)">+</button>
         </td>
         <td class="p-2"><input type="number" placeholder="₹" class="amt border p-2 w-full rounded" oninput="updateTotal()"></td>
-        <td class="p-2 text-center"><button class="text-red-400" onclick="this.closest('tr').remove(); window.updateTotal();">✖</button></td>
+        <td class="p-2 text-center"><button class="text-[#B0C4DE]" onclick="this.closest('tr').remove(); window.updateTotal();">✖</button></td>
     `;
     document.getElementById('itemList').appendChild(tr);
 };
