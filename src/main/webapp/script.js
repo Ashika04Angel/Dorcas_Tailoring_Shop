@@ -1,8 +1,3 @@
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("DOM fully loaded");
-});
-
-
 // --- Elements Selection ---
 const nameInput = document.getElementById('name');
 const numberInput = document.getElementById('number');
@@ -83,7 +78,7 @@ function renderFilteredRecords(list) {
         div.innerHTML = `
             <div class="flex flex-col text-left">
                 <span class="text-[10px] text-[#002D62] font-bold uppercase">${customer.date || 'Today'}</span>
-                <span class="font-bold text-[#002D62] text-lg cursor-pointer hover:text-[#191970]" 
+                <span class="font-bold text-[#002D62] text-lg cursor-pointer hover:text-[#00CCFF]" 
                       onclick="window.viewCustomerHistory(${customer.id}, '${customer.name}')">
                     ${customer.name}
                 </span>
@@ -507,6 +502,24 @@ Thank you!`;
 
     window.open(whatsappUrl, '_blank');
 };
+
+function getItemNames(bill) {
+    try {
+        const items = Array.isArray(bill.items_json)
+            ? bill.items_json
+            : JSON.parse(bill.items_json || bill.items || '[]');
+
+        if (!items.length) return '—';
+
+        return items
+            .map(i => `${i.name} × ${i.qty}`)
+            .join(', ');
+    } catch (e) {
+        return '—';
+    }
+}
+
+
 function renderBillingHistory(bills) {
     const tableBody = document.getElementById('historyTableBody');
     const cardBody  = document.getElementById('historyCardBody');
@@ -521,33 +534,63 @@ function renderBillingHistory(bills) {
     }
 
     bills.forEach(bill => {
+
         const billDate = bill.bill_date || bill.date || '—';
         const total    = bill.total_amount || bill.total || 0;
 
-        /* DESKTOP TABLE */
+        /* ---------- DESKTOP TABLE ROW ---------- */
         const tr = document.createElement('tr');
+        tr.className = 'border-b text-sm';
+
         tr.innerHTML = `
           <td class="p-3">${billDate}</td>
-          <td class="p-3 text-right">₹${total}</td>
-          <td class="p-3">Items</td>
-          <td class="p-3 text-center">
-            <i class="fas fa-trash text-red-500"></i>
-            <i class="fab fa-whatsapp text-green-500 ml-4"></i>
+          <td class="p-3 text-right font-bold">₹${total}</td>
+          <td class="p-3 text-gray-700">
+            ${getItemNames(bill)}
+          </td>
+          <td class="p-3 text-center flex gap-4 justify-center">
+            <button onclick="deleteBill(${bill.id})"
+              class="text-red-500 hover:text-red-700">
+              <i class="fas fa-trash"></i>
+            </button>
+
+            <button onclick='shareBillHistory(${JSON.stringify(bill)})'
+              class="text-green-500 hover:text-green-700">
+              <i class="fab fa-whatsapp"></i>
+            </button>
           </td>
         `;
+
         tableBody.appendChild(tr);
 
-        /* MOBILE CARD */
+        /* ---------- MOBILE CARD ---------- */
         const card = document.createElement('div');
-        card.className = "bg-white p-4 rounded shadow";
+        card.className =
+          "bg-white rounded-xl p-4 shadow border flex flex-col gap-2";
+
         card.innerHTML = `
-          <div><b>Date:</b> ${billDate}</div>
-          <div><b>Total:</b> ₹${total}</div>
-          <div class="flex gap-6 mt-2">
-            <i class="fas fa-trash text-red-500 text-xl"></i>
-            <i class="fab fa-whatsapp text-green-500 text-xl"></i>
+          <div class="flex justify-between items-center">
+            <span class="text-xs text-gray-500">${billDate}</span>
+            <span class="font-bold text-[#CB3434]">₹${total}</span>
+          </div>
+
+          <div class="text-sm text-gray-700">
+            <b>Items:</b> ${getItemNames(bill)}
+          </div>
+
+          <div class="flex gap-6 pt-2">
+            <button onclick="deleteBill(${bill.id})"
+              class="text-red-500 text-lg">
+              <i class="fas fa-trash"></i>
+            </button>
+
+            <button onclick='shareBillHistory(${JSON.stringify(bill)})'
+              class="text-green-500 text-lg">
+              <i class="fab fa-whatsapp"></i>
+            </button>
           </div>
         `;
+
         cardBody.appendChild(card);
     });
 }
