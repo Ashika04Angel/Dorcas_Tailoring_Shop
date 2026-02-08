@@ -165,25 +165,22 @@
 <div id="historyModal"
      class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
 
-  <div class="bg-[#F0F8FF] w-[90%] max-w-3xl rounded-xl shadow-xl">
+  <div class="bg-[#F0F8FF] w-[95%] sm:w-[90%] max-w-3xl rounded-xl shadow-xl">
 
     <!-- Header -->
-    <div class="flex justify-between items-center p-4 border-b dark:border-gray-700">
-      <h2 id="historyTitle"
-          class="text-lg font-bold text-black-800 dark:text-black-100">
+    <div class="flex justify-between items-center p-4 border-b">
+      <h2 id="historyTitle" class="text-lg font-bold text-black">
         Billing History
       </h2>
 
       <button onclick="closeHistory()"
-              class="text-gray-500 hover:text-red-500 text-xl">
-        ✕
-      </button>
+              class="text-gray-500 hover:text-red-500 text-xl">✕</button>
     </div>
 
-    <!-- Table -->
-    <div class="overflow-y-auto max-h-[60vh]">
-      <table class="w-full text-left">
-        <thead class="bg-gray-100 dark:bg-gray-800 text-sm text-white">
+    <!-- Body -->
+    <div class="overflow-y-auto max-h-[65vh] p-2">
+      <table class="w-full text-left hidden sm:table">
+        <thead class="bg-gray-800 text-white text-sm">
           <tr>
             <th class="p-3">Date</th>
             <th class="p-3 text-right">Total</th>
@@ -192,14 +189,16 @@
           </tr>
         </thead>
 
-        <tbody id="historyTableBody"
-               class="text-black dark:text-black">
-        </tbody>
+        <tbody id="historyTableBody"></tbody>
       </table>
+
+      <!-- MOBILE CARDS will be injected here -->
+      <div id="historyCardBody" class="flex flex-col gap-3 sm:hidden"></div>
     </div>
 
   </div>
 </div>
+
 
 <div id="toast"
      class="fixed bottom-5 right-5 hidden px-4 py-2 rounded-lg text-white text-sm shadow-lg z-50">

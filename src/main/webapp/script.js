@@ -83,7 +83,7 @@ function renderFilteredRecords(list) {
         div.innerHTML = `
             <div class="flex flex-col text-left">
                 <span class="text-[10px] text-[#002D62] font-bold uppercase">${customer.date || 'Today'}</span>
-                <span class="font-bold text-[#002D62] text-lg cursor-pointer hover:text-[#CB3434]" 
+                <span class="font-bold text-[#002D62] text-lg cursor-pointer hover:text-[#191970]" 
                       onclick="window.viewCustomerHistory(${customer.id}, '${customer.name}')">
                     ${customer.name}
                 </span>
@@ -402,82 +402,35 @@ document.getElementById('searchBar').addEventListener('input', function (e) {
 window.closeHistory = function () {
     document.getElementById('historyModal').classList.add('hidden');
 };
-
 window.viewCustomerHistory = function (customerId, customerName) {
     fetch('getHistory?customerId=' + customerId)
-        .then(function (res) {
-            return res.json();
-        })
-        .then(function (data) {
+        .then(res => res.json())
+        .then(data => {
 
             const titleEl = document.getElementById('historyTitle');
-            const tbody = document.getElementById('historyTableBody');
-            const modal = document.getElementById('historyModal');
+            const tbody   = document.getElementById('historyTableBody');
+            const modal   = document.getElementById('historyModal');
 
             if (!titleEl || !tbody || !modal) {
                 alert("History UI not loaded");
                 return;
             }
 
+           
             titleEl.innerText = 'Billing History – ' + customerName;
             tbody.innerHTML = '';
 
-            if (!Array.isArray(data) || data.length === 0) {
-                tbody.innerHTML =
-                    '<tr>' +
-                        '<td colspan="4" class="p-6 text-center opacity-60">' +
-                            'No bills found' +
-                        '</td>' +
-                    '</tr>';
-            } else {
-                data.forEach(function (bill) {
-
-                    const billDate = bill.bill_date || bill.date || '—';
-                    const total = bill.total_amount || bill.total || 0;
-                    const billId = bill.id || bill.bill_id;
-
-                    let itemsText = '—';
-                    try {
-                        const items = Array.isArray(bill.items_json)
-                            ? bill.items_json
-                            : JSON.parse(bill.items_json || bill.items || '[]');
-
-                        itemsText = items
-                            .map(function (i) {
-                                return i.name + ' (' + i.qty + ')';
-                            })
-                            .join(', ');
-                    } catch (e) {}
-
-                    const tr = document.createElement('tr');
-                    tr.className = 'border-b text-sm hover:bg-black/5 dark:hover:bg-white/5';
-
-                    tr.innerHTML =
-					'<td class="p-3 text-center">' +
-					    '<button onclick="deleteBill(' + billId + ')" ' +
-					        'class="text-red-500 hover:text-red-700 mr-3">' +
-					        '<i class="fas fa-trash"></i>' +
-					    '</button>' +
-
-					    '<button onclick=\'shareBillHistory(' +
-					        JSON.stringify(bill).replace(/'/g, "\\'") +
-					    ')\' class="text-green-500 hover:text-green-700">' +
-					        '<i class="fab fa-whatsapp"></i>' +
-					    '</button>' +
-					'</td>';
-
-
-                    tbody.appendChild(tr);
-                });
-            }
+           
+            renderBillingHistory(data);
 
             modal.classList.remove('hidden');
         })
-        .catch(function (err) {
+        .catch(err => {
             console.error(err);
             alert("Unable to load history");
         });
 };
+
 
 window.deleteBill = function (billId) {
 
@@ -554,3 +507,47 @@ Thank you!`;
 
     window.open(whatsappUrl, '_blank');
 };
+function renderBillingHistory(bills) {
+    const tableBody = document.getElementById('historyTableBody');
+    const cardBody  = document.getElementById('historyCardBody');
+
+    tableBody.innerHTML = '';
+    cardBody.innerHTML  = '';
+
+    if (!bills || bills.length === 0) {
+        cardBody.innerHTML =
+            `<p class="text-center text-gray-400 py-6">No bills found</p>`;
+        return;
+    }
+
+    bills.forEach(bill => {
+        const billDate = bill.bill_date || bill.date || '—';
+        const total    = bill.total_amount || bill.total || 0;
+
+        /* DESKTOP TABLE */
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="p-3">${billDate}</td>
+          <td class="p-3 text-right">₹${total}</td>
+          <td class="p-3">Items</td>
+          <td class="p-3 text-center">
+            <i class="fas fa-trash text-red-500"></i>
+            <i class="fab fa-whatsapp text-green-500 ml-4"></i>
+          </td>
+        `;
+        tableBody.appendChild(tr);
+
+        /* MOBILE CARD */
+        const card = document.createElement('div');
+        card.className = "bg-white p-4 rounded shadow";
+        card.innerHTML = `
+          <div><b>Date:</b> ${billDate}</div>
+          <div><b>Total:</b> ₹${total}</div>
+          <div class="flex gap-6 mt-2">
+            <i class="fas fa-trash text-red-500 text-xl"></i>
+            <i class="fab fa-whatsapp text-green-500 text-xl"></i>
+          </div>
+        `;
+        cardBody.appendChild(card);
+    });
+}
