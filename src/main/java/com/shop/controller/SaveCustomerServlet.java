@@ -23,9 +23,13 @@ public class SaveCustomerServlet extends HttpServlet {
         response.setContentType("text/plain");
         response.setCharacterEncoding("UTF-8");
 
-        if (name == null || phone == null || name.isBlank() || phone.isBlank()) {
-            response.getWriter().write("Error: Missing data");
+        if (name == null || name.isBlank()) {
+            response.getWriter().write("Error: Name is required");
             return;
+        }
+        
+        if (phone != null && phone.isBlank()) {
+            phone = null;
         }
 
         String url = System.getenv("DB_URL");
@@ -45,14 +49,19 @@ public class SaveCustomerServlet extends HttpServlet {
                 String sql = "INSERT INTO customers (name, phone) VALUES (?, ?)";
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ps.setString(1, name);
-                ps.setString(2, phone);
+               
+                if (phone != null) {
+                    ps.setString(2, phone);
+                } else {
+                    ps.setNull(2, java.sql.Types.VARCHAR);
+                }
 
                 ps.executeUpdate();
                 response.getWriter().write("Success");
             }
 
         } catch (Exception e) {
-            e.printStackTrace(); // 👈 VERY IMPORTANT for Render logs
+            e.printStackTrace(); 
             response.getWriter().write("Error: " + e.getMessage());
         }
     }

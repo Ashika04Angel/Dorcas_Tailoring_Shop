@@ -44,7 +44,7 @@ viewBtn.addEventListener('click', () => {
     viewRecordDiv.classList.remove('hidden');
     
     // UI Styling logic
-    viewRecordDiv.className = "relative p-10 pt-16 bg-white rounded-2xl shadow-2xl w-[95%] max-w-[600px] mx-auto mt-6 h-auto max-h-[85vh] flex flex-col";
+    viewRecordDiv.className = "relative p-10 pt-16 rounded-2xl shadow-2xl w-[95%] max-w-[600px] mx-auto mt-6 h-auto max-h-[85vh] flex flex-col";
     recordList.className = "flex flex-col gap-4 mt-6 w-full overflow-y-auto pr-2";
     document.getElementById('searchBar').value = '';
     
@@ -54,7 +54,7 @@ viewBtn.addEventListener('click', () => {
         closeViewBtn = document.createElement('button');
         closeViewBtn.id = "closeViewBox";
         closeViewBtn.innerHTML = '<i class="fas fa-times"></i>'; 
-        closeViewBtn.className = "absolute top-4 right-5 text-gray-400 hover:text-red-500 text-3xl cursor-pointer z-50 p-2 leading-none";
+        closeViewBtn.className = "absolute top-4 right-5 text-[#E1EBEE] hover:text-red-500 text-3xl cursor-pointer z-50 p-2 leading-none";
         closeViewBtn.onclick = () => {
             viewRecordDiv.classList.add('hidden');
             enterDetailsDiv.classList.remove('hidden');
@@ -108,39 +108,44 @@ saveBtn.onclick = () => {
     const name = nameInput.value.trim();
     const phone = numberInput.value.trim();
 
-    if (!name || !phone) {
-        alert("Please enter details first!");
+    // Only name is required now
+    if (!name) {
+        alert("Please enter the name first!");
         return;
     }
 
-	const params = new URLSearchParams();
-	    params.append('name', name);
-	    params.append('phone', phone);
+    const params = new URLSearchParams();
+    params.append('name', name);
 
-		fetch('saveCustomer', { 
-		        method: 'POST', 
-		        body: params 
-		    })
-	
-        .then(res => {
-			if (!res.ok) throw new Error('Server error');
-			 	 return res.text();
-		})
-        .then(data => {
-			if (data.trim().toLowerCase() === "success") {
-			        fetchAndRenderCustomers().then(() => {
-			            showStatus("Customer saved!", true);
-			        });
-			    } else {
-			        console.warn("Unexpected response:", data);
-			        showStatus("Error saving customer.", false);
-			    }
-        })
-		.catch(err => {
-		        console.error("Fetch Error:", err);
-		        showStatus("Connection failed.", false);
-		    });
+    // Phone is optional
+    if (phone) {
+        params.append('phone', phone);
+    }
+
+    fetch('saveCustomer', { 
+        method: 'POST', 
+        body: params 
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('Server error');
+        return res.text();
+    })
+    .then(data => {
+        if (data.trim().toLowerCase() === "success") {
+            fetchAndRenderCustomers().then(() => {
+                showStatus("Customer saved!", true);
+            });
+        } else {
+            console.warn("Unexpected response:", data);
+            showStatus("Error saving customer.", false);
+        }
+    })
+    .catch(err => {
+        console.error("Fetch Error:", err);
+        showStatus("Connection failed.", false);
+    });
 };
+
 
 function showStatus(message, isSuccess) {
     const statusMsg = document.getElementById('statusMsg');
@@ -290,13 +295,12 @@ window.downloadAsPDF = () => {
 };
 window.shareWhatsApp = () => {
     const name = document.getElementById('billCustName').innerText;
-    const phone = document.getElementById('billCustPhone').innerText;
     const total = document.getElementById('billTotal').innerText;
-    
+
     let message = `*DORCAS TAILORING SHOP*%0A`;
     message += `Customer: ${name}%0A`;
     message += `--------------------------%0A`;
-    
+
     document.querySelectorAll('#billItemsBody tr').forEach(row => {
         const cols = row.querySelectorAll('td');
         if (cols.length >= 3) {
@@ -308,9 +312,10 @@ window.shareWhatsApp = () => {
     message += `*Total: ₹${total}*%0A`;
     message += `Thank you!`;
 
-    const whatsappUrl = `https://wa.me/91${phone}?text=${message}`;
+    const whatsappUrl = `https://wa.me/?text=${message}`;
     window.open(whatsappUrl, '_blank');
 };
+
 
 // Initialize
 fetchAndRenderCustomers();
@@ -360,16 +365,17 @@ document.getElementById('backToView').onclick = () => {
     document.getElementById('enter_details').classList.remove('hidden');
 };
 // search bar
-document.getElementById('searchBar').addEventListener('input', function(e) {
+document.getElementById('searchBar').addEventListener('input', function (e) {
     const term = e.target.value.toLowerCase().trim();
     const records = document.querySelectorAll('#recordList > div');
     let visibleCount = 0;
 
     records.forEach(card => {
-        // We look for the name inside the customer card
-        const name = card.querySelector('span.font-bold').innerText.toLowerCase();
-        
-        if (name.includes(term)) {
+
+        // Get ALL text inside the card (name + phone)
+        const cardText = card.innerText.toLowerCase();
+
+        if (cardText.includes(term)) {
             card.style.display = 'flex';
             visibleCount++;
         } else {
@@ -377,11 +383,9 @@ document.getElementById('searchBar').addEventListener('input', function(e) {
         }
     });
 
-    // Handle the "No Results" message
     let noResultMsg = document.getElementById('noResults');
-    
+
     if (visibleCount === 0) {
-        // If message doesn't exist yet, create it
         if (!noResultMsg) {
             noResultMsg = document.createElement('p');
             noResultMsg.id = 'noResults';
@@ -390,12 +394,10 @@ document.getElementById('searchBar').addEventListener('input', function(e) {
             document.getElementById('recordList').appendChild(noResultMsg);
         }
     } else {
-        // If we found results, remove the message if it exists
-        if (noResultMsg) {
-            noResultMsg.remove();
-        }
+        if (noResultMsg) noResultMsg.remove();
     }
 });
+
 
 window.closeHistory = function () {
     document.getElementById('historyModal').classList.add('hidden');
@@ -451,15 +453,19 @@ window.viewCustomerHistory = function (customerId, customerName) {
                     tr.className = 'border-b text-sm hover:bg-black/5 dark:hover:bg-white/5';
 
                     tr.innerHTML =
-                        '<td class="p-3">' + billDate + '</td>' +
-                        '<td class="p-3 text-right font-bold">₹' + total + '</td>' +
-                        '<td class="p-3 text-xs">' + itemsText + '</td>' +
-                        '<td class="p-3 text-center">' +
-                            '<button onclick="deleteBill(' + billId + ')" ' +
-                                'class="text-red-500 hover:text-red-700">' +
-                                '<i class="fas fa-trash"></i>' +
-                            '</button>' +
-                        '</td>';
+					'<td class="p-3 text-center">' +
+					    '<button onclick="deleteBill(' + billId + ')" ' +
+					        'class="text-red-500 hover:text-red-700 mr-3">' +
+					        '<i class="fas fa-trash"></i>' +
+					    '</button>' +
+
+					    '<button onclick=\'shareBillHistory(' +
+					        JSON.stringify(bill).replace(/'/g, "\\'") +
+					    ')\' class="text-green-500 hover:text-green-700">' +
+					        '<i class="fab fa-whatsapp"></i>' +
+					    '</button>' +
+					'</td>';
+
 
                     tbody.appendChild(tr);
                 });
@@ -513,6 +519,41 @@ function showToast(message, success = true) {
         toast.classList.add("hidden");
     }, 2500);
 }
+window.shareBillHistory = function (bill) {
+
+    const customerName =
+        document.getElementById('historyTitle')
+            .innerText.replace('Billing History – ', '');
+
+    const billDate = bill.bill_date || bill.date || '—';
+    const total = bill.total_amount || bill.total || 0;
+
+    let message = `*DORCAS TAILORING SHOP*
+Customer: ${customerName}
+Bill Date: ${billDate}
+--------------------------`;
+
+    let items = [];
+    try {
+        items = Array.isArray(bill.items_json)
+            ? bill.items_json
+            : JSON.parse(bill.items_json || bill.items || '[]');
+    } catch (e) {}
+
+    items.forEach(i => {
+        message += `\n${i.name} x ${i.qty}`;
+    });
+
+    message += `
+--------------------------
+*Total: ₹${total}*
+Thank you!`;
+
+    const whatsappUrl =
+        `https://wa.me/?text=${encodeURIComponent(message)}`;
+
+    window.open(whatsappUrl, '_blank');
+};
 
 
 
