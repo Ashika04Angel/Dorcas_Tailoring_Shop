@@ -153,7 +153,7 @@ function showStatus(message, isSuccess) {
 // --- 3. ITEMS & BILLING LOGIC ---
 window.createItemRow = (itemName) => {
     const tr = document.createElement('tr');
-    tr.className = "border-b hover:bg-gray-50";
+    tr.className = "border-b";
     tr.innerHTML = `
         <td class="p-2"><input type="text" value="${itemName}" class="border p-2 w-full rounded"></td>
         <td class="p-2 flex items-center gap-2 justify-center">
